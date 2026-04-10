@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $product->name }} | ProShop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-[#fcfcfd] text-slate-900">
+
+    {{-- Navbar --}}
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+            <a href="/" class="text-2xl font-black tracking-tighter italic">PRO<span class="text-indigo-600">SHOP.</span></a>
+            <a href="/" class="text-sm font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Nazad na shop
+            </a>
+        </div>
+    </nav>
+
+    {{-- Glavni deo --}}
+    <main class="max-w-7xl mx-auto px-4 py-12 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-12">
+
+        {{-- Slika proizvoda --}}
+        <div class="flex items-center justify-center">
+            @if($product->image)
+                <img src="{{ asset('storage/' . $product->image) }}" class="rounded-[32px] shadow-2xl w-full max-w-md object-cover">
+            @else
+                <div class="w-full max-w-md h-80 bg-slate-100 flex items-center justify-center text-slate-300 font-bold text-xl rounded-[32px]">
+                    Nema slike
+                </div>
+            @endif
+        </div>
+
+        {{-- Informacije o proizvodu --}}
+        <div class="flex flex-col justify-between">
+            <div>
+                <h1 class="text-3xl md:text-5xl font-black mb-4 italic uppercase tracking-tight">{{ $product->name }}</h1>
+
+                {{-- Cena i popust --}}
+                <div class="flex items-center gap-4 mb-6">
+                    <p class="text-indigo-600 font-extrabold text-2xl md:text-4xl">
+                        {{ number_format($product->price, 0, ',', '.') }} <span class="text-xs md:text-sm">RSD</span>
+                    </p>
+                    @if($product->hasDiscount())
+                        <p class="text-slate-400 line-through text-sm md:text-base font-bold">
+                            {{ number_format($product->old_price, 0, ',', '.') }} RSD
+                        </p>
+                        <span class="bg-rose-500 text-white px-3 py-1 rounded-full text-[10px] md:text-sm font-black uppercase">
+                            -{{ $product->discountPercentage() }}%
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Opis proizvoda --}}
+                @if($product->description)
+                    <p class="text-slate-600 text-sm md:text-base mb-6 leading-relaxed">{{ $product->description }}</p>
+                @endif
+
+                {{-- Varijante proizvoda --}}
+                <form action="{{ route('cart.store') }}" method="POST" class="space-y-4">
+                    @csrf
+                    <input type="hidden" name="id" value="{{ $product->id }}">
+                    <input type="hidden" name="name" value="{{ $product->name }}">
+                    <input type="hidden" name="price" value="{{ $product->price }}">
+
+                    @if($product->variants)
+                        @foreach($product->variants as $variant)
+                            <div>
+                                <label class="block text-slate-500 font-bold text-xs mb-1">{{ $variant['name'] }}</label>
+                                <select name="options[{{ $variant['name'] }}]" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                                    @php $vOptions = explode(',', $variant['options']); @endphp
+                                    @foreach($vOptions as $vOpt)
+                                        <option value="{{ trim($vOpt) }}">{{ trim($vOpt) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    @endif
+
+                    {{-- Količina --}}
+                    <div>
+                        <label class="block text-slate-500 font-bold text-xs mb-1">Količina</label>
+                        <input type="number" name="quantity" value="1" min="1" class="w-24 text-center border border-slate-200 rounded-xl py-2">
+                    </div>
+
+                    {{-- Dugme Dodaj u korpu --}}
+                    <button type="submit" class="mt-4 w-full md:w-1/2 bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg active:scale-95">
+                        Dodaj u korpu
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    {{-- Footer --}}
+    <footer class="max-w-7xl mx-auto px-4 py-12 text-center text-slate-400 text-[10px] font-black uppercase tracking-widest">
+        © 2026 ProShop Premium Store.
+    </footer>
+
+</body>
+</html>
